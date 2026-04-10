@@ -75,7 +75,7 @@ X_test_vec = vectorizer.transform(X_test)        # only transform
 
 
 # Example model
-model = LogisticRegression(max_iter=10000, random_state=0, class_weight = 'balanced')
+model = LogisticRegression(max_iter=10000, random_state=0, class_weight = 'balanced', C=100)
 model.fit(X_train_vec, y_train)
 
 print("Train accuracy:", model.score(X_train_vec, y_train))
