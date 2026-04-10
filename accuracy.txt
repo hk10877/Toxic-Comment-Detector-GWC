@@ -1,0 +1,36 @@
+logic regression 
+Train accuracy: 0.9580513254371122
+Test accuracy: 0.9555068149772834
+
+support vector 
+Train accuracy: 0.9623206116437927
+Test accuracy: 0.9574181419395269
+
+
+decison tree
+Train accuracy: 0.997
+Test accuracy: 0.940
+
+naive
+Train accuracy: 0.951
+Test accuracy: 0.949
+
+rand foret
+Train accuracy: 0.9970624177476969
+Test accuracy: 0.954911483628388
+
+knn
+Train accuracy: 0.937
+Test accuracy: 0.923
+
+gradient boosting mode
+Train accuracy: 0.9421648806166573
+Test accuracy: 0.9415321948926837
+
+XGB
+Train accuracy: 0.960
+Test accuracy: 0.954
+
+Light
+Train accuracy: 0.960
+Test accuracy: 0.955
