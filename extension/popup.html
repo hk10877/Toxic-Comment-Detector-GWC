@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tonecheck</title>
+    <link rel="stylesheet" href="popup.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="frame">
+      <!-- HEADER -->
+      <header class="hdr">
+        <div class="hdr-left">
+          <div class="logo">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M6 12h12M12 6v12" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+          </div>
+          <div class="hdr-text">
+            <div class="brand">Tonecheck</div>
+            <div class="kicker">Toxicity Diagnostic · v1.0</div>
+          </div>
+        </div>
+        <div class="status" id="status">
+          <span class="dot" id="status-dot"></span>
+          <span class="status-label" id="status-label">connecting</span>
+        </div>
+      </header>
+
+      <!-- INPUT -->
+      <section class="input-section">
+        <div class="label-row">
+          <span class="label">Input specimen</span>
+          <span class="counter" id="counter">0 chars</span>
+        </div>
+        <div class="textarea-wrap">
+          <textarea
+            id="input"
+            placeholder="Paste or type text to analyze..."
+            spellcheck="false"
+          ></textarea>
+          <div class="textarea-deco">
+            <span class="corner tl"></span>
+            <span class="corner tr"></span>
+            <span class="corner bl"></span>
+            <span class="corner br"></span>
+          </div>
+        </div>
+        <div class="action-row">
+          <button id="clear-btn" class="btn btn-ghost" type="button">Clear</button>
+          <button id="analyze-btn" class="btn btn-primary" type="button">
+            <span class="btn-label">Run analysis</span>
+            <span class="btn-arrow">→</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- RESULTS -->
+      <section class="results" id="results" aria-live="polite">
+        <!-- IDLE -->
+        <div class="state state-idle" id="state-idle">
+          <div class="idle-art">
+            <svg viewBox="0 0 200 80" preserveAspectRatio="none" width="100%" height="80">
+              <path id="wave" d="M0,40 Q25,20 50,40 T100,40 T150,40 T200,40"
+                    fill="none" stroke="currentColor" stroke-width="1"/>
+            </svg>
+          </div>
+          <p class="idle-copy">
+            <span class="idle-copy-1">No signal.</span>
+            <span class="idle-copy-2">Awaiting input.</span>
+          </p>
+        </div>
+
+        <!-- LOADING -->
+        <div class="state state-loading hidden" id="state-loading">
+          <div class="loader">
+            <div class="loader-bar"><div class="loader-fill"></div></div>
+            <div class="loader-steps">
+              <span class="step active" data-step="1">classify</span>
+              <span class="sep">·</span>
+              <span class="step" data-step="2">retrieve</span>
+              <span class="sep">·</span>
+              <span class="step" data-step="3">explain</span>
+              <span class="sep">·</span>
+              <span class="step" data-step="4">rewrite</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RESULT -->
+        <div class="state state-result hidden" id="state-result">
+          <!-- Verdict strip -->
+          <div class="verdict" id="verdict">
+            <div class="verdict-main">
+              <span class="verdict-tag" id="verdict-tag">— —</span>
+              <span class="verdict-label" id="verdict-label">awaiting</span>
+            </div>
+            <div class="verdict-gauge">
+              <div class="gauge-track">
+                <div class="gauge-fill" id="gauge-fill"></div>
+              </div>
+              <div class="gauge-value">
+                <span id="confidence-num">0</span><span class="pct">%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabs (for toxic results only) -->
+          <div class="tabs hidden" id="tabs">
+            <button class="tab active" data-tab="explain">why</button>
+            <button class="tab" data-tab="rewrite">rewrite</button>
+            <button class="tab" data-tab="matches">matches</button>
+            <div class="tab-underline" id="tab-underline"></div>
+          </div>
+
+          <div class="tab-panels" id="tab-panels">
+            <!-- Explanation -->
+            <div class="panel panel-explain active" id="panel-explain">
+              <div class="panel-hdr">
+                <span class="panel-num">01</span>
+                <span class="panel-title">Diagnostic</span>
+              </div>
+              <p class="panel-body" id="explain-text">—</p>
+            </div>
+            <!-- Rewrite -->
+            <div class="panel panel-rewrite" id="panel-rewrite">
+              <div class="panel-hdr">
+                <span class="panel-num">02</span>
+                <span class="panel-title">Constructive rewrite</span>
+                <button class="copy-btn" id="copy-rewrite" title="Copy rewrite">copy</button>
+              </div>
+              <blockquote class="rewrite-quote" id="rewrite-text">—</blockquote>
+            </div>
+            <!-- Matches -->
+            <div class="panel panel-matches" id="panel-matches">
+              <div class="panel-hdr">
+                <span class="panel-num">03</span>
+                <span class="panel-title">Similar flagged comments</span>
+              </div>
+              <ul class="matches" id="matches-list"></ul>
+            </div>
+          </div>
+
+          <!-- Safe state -->
+          <div class="safe-note hidden" id="safe-note">
+            <div class="safe-hdr">
+              <span class="safe-num">OK</span>
+              <span>No toxic markers detected. Text is clear to send.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ERROR -->
+        <div class="state state-error hidden" id="state-error">
+          <div class="err-hdr">! connection failure</div>
+          <p class="err-body" id="err-body">
+            Cannot reach the analysis server.
+          </p>
+          <div class="err-hint">
+            Start the backend with <code>python app.py</code> and try again.
+          </div>
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="ftr">
+        <div class="ftr-left">
+          <span class="ftr-dot"></span>
+          <span>tfidf · logreg · llama-3.3</span>
+        </div>
+        <div class="ftr-right">
+          <a href="#" id="ping-btn" class="ftr-link">recheck server</a>
+        </div>
+      </footer>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

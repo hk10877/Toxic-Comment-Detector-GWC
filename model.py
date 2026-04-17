@@ -126,7 +126,7 @@ def retrieve_similar_comments(query: str, top_k: int = 5) -> list[dict]:
  
 # GROQ CLIENT 
  
-client = Groq(api_key="api key here")  # or set env var GROQ_API_KEY
+client = Groq(api_key="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")  # or set env var GROQ_API_KEY
  
 def call_groq(prompt: str, system: str, max_tokens: int = 400) -> str:
     response = client.chat.completions.create(
@@ -190,7 +190,7 @@ def analyze(comment: str, top_k: int = 5) -> dict:
     result = {
         "comment":    comment,
         "prediction": "Toxic" if prediction == 1 else "Not Toxic",
-        "confidence": confidence,
+        #"confidence": confidence,
         "explanation": None,
         "rewrite":     None,
         "retrieved":   None,
