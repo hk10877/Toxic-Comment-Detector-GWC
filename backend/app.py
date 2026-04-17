@@ -25,21 +25,22 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics.pairwise import cosine_similarity
 from groq import Groq
 
+from dotenv import load_dotenv
+load_dotenv()
 
-# ------------------------------------------------------------------
 # CONFIG
-# ------------------------------------------------------------------
-DATA_PATH = os.environ.get("TOXIC_DATA_PATH", "data/train.csv")
-GROQ_API_KEY = os.environ.get(
-    "GROQ_API_KEY",
-    "api key here",
-)
+# DATA_PATH = os.environ.get("TOXIC_DATA_PATH", "data/train.csv")
+# GROQ_API_KEY = os.environ.get(
+#     "GROQ_API_KEY",
+#     "",
+# )
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_PATH = os.path.join(BASE_DIR, "data", "train.csv")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 TOXIC_THRESHOLD = 0.3
 
 
-# ------------------------------------------------------------------
 # DATA + TRAINING
-# ------------------------------------------------------------------
 print("[boot] loading dataset...")
 df = pd.read_csv(DATA_PATH)
 df = df.drop(
@@ -48,16 +49,12 @@ df = df.drop(
 df = df.dropna(subset=["comment_text"])
 
 
-
-
 def clean_text(text: str) -> str:
     text = text.lower()
     text = re.sub(r"http\S+", "", text)
     text = re.sub(r"[^a-z\s]", "", text)
     text = re.sub(r"\s+", " ", text).strip()
     return text
-
-
 
 
 df["comment_text"] = df["comment_text"].apply(clean_text)
@@ -99,11 +96,7 @@ doc_vectors = vectorizer.transform(df["comment_text"].tolist())
 client = Groq(api_key=GROQ_API_KEY)
 
 
-
-
-# ------------------------------------------------------------------
 # CORE FUNCTIONS
-# ------------------------------------------------------------------
 def retrieve_similar_comments(query: str, top_k: int = 5):
     cleaned = clean_text(query)
     q_vec = vectorizer.transform([cleaned])
@@ -119,8 +112,6 @@ def retrieve_similar_comments(query: str, top_k: int = 5):
     ]
 
 
-
-
 def call_groq(prompt: str, system: str, max_tokens: int = 400) -> str:
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
@@ -132,8 +123,6 @@ def call_groq(prompt: str, system: str, max_tokens: int = 400) -> str:
         max_tokens=max_tokens,
     )
     return response.choices[0].message.content.strip()
-
-
 
 
 def explain(query: str, retrieved, confidence: float) -> str:
@@ -158,7 +147,6 @@ Reference patterns from the examples above. Be specific, not generic."""
 
 
 
-
 def rewrite(query: str) -> str:
     prompt = f"""Rewrite the following toxic comment so it expresses the same underlying concern or emotion, but in a respectful, constructive way.
 
@@ -173,7 +161,6 @@ Rules:
 - Return ONLY the rewritten comment, nothing else."""
     system = "You are a communication coach who rewrites toxic messages constructively."
     return call_groq(prompt, system, max_tokens=100)
-
 
 
 
@@ -210,16 +197,10 @@ def analyze(comment: str, top_k: int = 5) -> dict:
     return result
 
 
-
-
-# ------------------------------------------------------------------
 # FLASK APP
-# ------------------------------------------------------------------
 app = Flask(__name__)
 # Allow the Chrome extension (chrome-extension://...) + localhost to call us
 CORS(app, resources={r"/*": {"origins": "*"}})
-
-
 
 
 @app.route("/health", methods=["GET"])
@@ -232,7 +213,6 @@ def health():
             "dataset_size": len(df),
         }
     )
-
 
 
 
@@ -250,8 +230,6 @@ def analyze_route():
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
 
 
 if __name__ == "__main__":

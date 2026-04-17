@@ -1,12 +1,10 @@
-/* ================================================================
-   TONECHECK — popup.js
-   ================================================================ */
+/* TONECHECK — popup.js */
 
 
 const API_BASE = "http://127.0.0.1:5000";
 
 
-// ----- element refs -----
+// element refs 
 const $ = (id) => document.getElementById(id);
 
 
@@ -40,9 +38,7 @@ const el = {
 };
 
 
-// ================================================================
 // INIT
-// ================================================================
 document.addEventListener("DOMContentLoaded", () => {
   chrome.storage?.local.get(["lastDraft"], (data) => {
     if (data.lastDraft) {
@@ -67,9 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// ================================================================
 // INPUT HANDLERS
-// ================================================================
 el.input.addEventListener("input", () => {
   updateCounter();
   chrome.storage?.local.set({ lastDraft: el.input.value });
@@ -118,9 +112,7 @@ function updateCounter() {
 }
 
 
-// ================================================================
 // SERVER HEALTH
-// ================================================================
 async function pingServer() {
   setStatus("connecting", "pending");
   try {
@@ -142,9 +134,7 @@ function setStatus(label, state) {
 }
 
 
-// ================================================================
 // ANALYSIS
-// ================================================================
 async function runAnalysis() {
   const text = el.input.value.trim();
   if (!text) {
@@ -196,10 +186,7 @@ function animateLoaderSteps() {
   }, 600);
 }
 
-
-// ================================================================
 // RENDERING
-// ================================================================
 function renderResult(data) {
   clearInterval(loaderInterval);
   showState("result");
@@ -241,9 +228,7 @@ function renderResult(data) {
 }
 
 
-// ================================================================
 // STATE SWITCHER
-// ================================================================
 function showState(state) {
   [el.stateIdle, el.stateLoading, el.stateResult, el.stateError].forEach((s) =>
     s.classList.add("hidden")
@@ -267,9 +252,7 @@ function showState(state) {
 }
 
 
-// ================================================================
 // TABS
-// ================================================================
 function setupTabs() {
   const tabs = document.querySelectorAll(".tab");
   tabs.forEach((t) => {

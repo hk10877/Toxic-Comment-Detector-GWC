@@ -1,10 +1,14 @@
 import pandas as pd
 import re
+import os
+from dotenv import load_dotenv
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics.pairwise import cosine_similarity
 from groq import Groq
+
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 # load dataset
 df = pd.read_csv("data/train.csv")
 
@@ -12,9 +16,6 @@ df = pd.read_csv("data/train.csv")
 # cleaning steps and extracting columns we need
 df = df.drop(columns=['severe_toxic', 'obscene', 'threat', 'insult', 'identity_hate', "id"])
 df = df.dropna(subset=['comment_text'])
-
-
-# df = df['comment_text'].str.strip()
 
 
 # cleaning the text
@@ -56,42 +57,6 @@ X_train_vec = vectorizer.fit_transform(X_train)  # learn + transform
 X_test_vec = vectorizer.transform(X_test)        # only transform
 
 
-# print(X_train_vec.shape)
-# print(X_test_vec.shape)
-
-
-# # Harschi driving
-# # after fitting vectorizer
-# doc_vectors = vectorizer.transform(df["comment_text"].tolist())
-
-
-# def retrieve_similar_comments(query, top_k=5):
-#     cleaned = clean_text(query)
-#     q_vec = vectorizer.transform([cleaned])
-#     scores = cosine_similarity(q_vec, doc_vectors).flatten()
-#     top_idx = scores.argsort()[::-1][:top_k]
-
-
-#     results = []
-#     for i in top_idx:
-#         results.append({
-#             "comment_text": df.iloc[i]["comment_text"],
-#             "toxic": int(df.iloc[i]["toxic"]),
-#             "score": float(scores[i]),
-#         })
-#     return results
-
-
-# # example usage
-# query = "That person is ugly"
-# print(retrieve_similar_comments(query, top_k=5))
-
-
-# # print(vectorizer.get_feature_names_out()[:200])
-
-
-
-
 # Example model
 model = LogisticRegression(max_iter=10000, random_state=0, class_weight = 'balanced', C=100)
 model.fit(X_train_vec, y_train)
@@ -99,36 +64,6 @@ model.fit(X_train_vec, y_train)
 
 print("Train accuracy:", model.score(X_train_vec, y_train))
 print("Test accuracy:", model.score(X_test_vec, y_test))
-
-
-# # for testing the model
-# def predict_toxicity(text):
-#     # clean the input the SAME way as training data
-#     cleaned = clean_text(text)
-   
-#     # vectorize (IMPORTANT: use transform, not fit_transform)
-#     vec = vectorizer.transform([cleaned])
-   
-#     # predict
-#     pred = model.predict(vec)[0]
-#     prob = model.predict_proba(vec)[0][1]  # probability of toxic
-   
-#     return pred, prob
-
-
-# sentence = "You are a sad person"
-# pred, prob = predict_toxicity(sentence)
-
-
-
-
-
-
-# print("Sentence:", sentence)
-# print("Prediction:", "Toxic" if pred == 1 else "Not Toxic")
-# print("Confidence:", prob)
-
-
 
 
 doc_vectors = vectorizer.transform(df["comment_text"].tolist())
@@ -152,7 +87,8 @@ def retrieve_similar_comments(query: str, top_k: int = 5) -> list[dict]:
  
 # GROQ CLIENT
  
-client = Groq(api_key="api key here")  # or set env var GROQ_API_KEY
+# client = Groq(api_key="")  # or set env var GROQ_API_KEY
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
  
 def call_groq(prompt: str, system: str, max_tokens: int = 400) -> str:
     response = client.chat.completions.create(

@@ -1,7 +1,7 @@
-/* ================================================================
+/* 
    TONECHECK — Toxicity Diagnostic Extension
    Aesthetic: editorial terminal-noir
-   ================================================================ */
+*/
 
 
 :root {
@@ -10,9 +10,12 @@
   --bg-elev: #16161a;
   --bg-elev-2: #1c1c21;
   --ink: #f3f1ea;
-  --ink-dim: #c4c0b5;      /* brightened from #9b978e */
-  --ink-faint: #8a867c;    /* brightened from #55524b — was the main problem */
-  --rule: #3a3a42;         /* slightly brighter so borders are visible */
+  --ink-dim: #c4c0b5;
+  /* brightened from #9b978e */
+  --ink-faint: #8a867c;
+  /* brightened from #55524b — was the main problem */
+  --rule: #3a3a42;
+  /* slightly brighter so borders are visible */
 
 
   /* signals */
@@ -27,11 +30,9 @@
   --f-display: "Fraunces", "Georgia", serif;
   --f-mono: "JetBrains Mono", "SF Mono", "Menlo", monospace;
 
-
   /* motion */
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
-
 
 * {
   box-sizing: border-box;
@@ -39,8 +40,8 @@
   padding: 0;
 }
 
-
-html, body {
+html,
+body {
   width: 380px;
   min-height: 500px;
   background: var(--bg);
@@ -64,7 +65,6 @@ body::before {
   z-index: 0;
 }
 
-
 body::after {
   content: "";
   position: fixed;
@@ -76,7 +76,6 @@ body::after {
   mix-blend-mode: overlay;
 }
 
-
 .frame {
   position: relative;
   z-index: 1;
@@ -87,9 +86,7 @@ body::after {
 }
 
 
-/* ================================================================
-   HEADER
-   ================================================================ */
+/* HEADER*/
 .hdr {
   display: flex;
   justify-content: space-between;
@@ -117,7 +114,9 @@ body::after {
 
 
 @keyframes logoSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 
@@ -175,14 +174,19 @@ body::after {
 
 
 @keyframes pulseDot {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(199, 255, 61, 0.5); }
-  50%      { box-shadow: 0 0 0 5px rgba(199, 255, 61, 0); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(199, 255, 61, 0.5);
+  }
+
+  50% {
+    box-shadow: 0 0 0 5px rgba(199, 255, 61, 0);
+  }
 }
 
 
-/* ================================================================
-   INPUT
-   ================================================================ */
+/* INPUT */
 .input-section {
   margin-bottom: 14px;
 }
@@ -263,10 +267,33 @@ textarea::placeholder {
 }
 
 
-.corner.tl { top: -1px; left: -1px; border-right: none; border-bottom: none; }
-.corner.tr { top: -1px; right: -1px; border-left: none; border-bottom: none; }
-.corner.bl { bottom: -1px; left: -1px; border-right: none; border-top: none; }
-.corner.br { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+.corner.tl {
+  top: -1px;
+  left: -1px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.corner.tr {
+  top: -1px;
+  right: -1px;
+  border-left: none;
+  border-bottom: none;
+}
+
+.corner.bl {
+  bottom: -1px;
+  left: -1px;
+  border-right: none;
+  border-top: none;
+}
+
+.corner.br {
+  bottom: -1px;
+  right: -1px;
+  border-left: none;
+  border-top: none;
+}
 
 
 .textarea-wrap:focus-within .corner {
@@ -348,9 +375,7 @@ textarea::placeholder {
 }
 
 
-/* ================================================================
-   RESULTS
-   ================================================================ */
+/* RESULTS */
 .results {
   flex: 1;
   position: relative;
@@ -362,17 +387,29 @@ textarea::placeholder {
 }
 
 
-.state { animation: fadeIn 0.35s var(--ease); }
-.hidden { display: none !important; }
+.state {
+  animation: fadeIn 0.35s var(--ease);
+}
 
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
+.hidden {
+  display: none !important;
 }
 
 
-/* IDLE STATE --------------------------------------------------- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* IDLE STATE */
 .state-idle {
   color: var(--ink-dim);
   text-align: center;
@@ -395,7 +432,9 @@ textarea::placeholder {
 
 
 @keyframes waveFlow {
-  to { stroke-dashoffset: -400; }
+  to {
+    stroke-dashoffset: -400;
+  }
 }
 
 
@@ -408,11 +447,16 @@ textarea::placeholder {
 }
 
 
-.idle-copy-1 { color: var(--ink); }
-.idle-copy-2 { color: var(--ink-dim); }
+.idle-copy-1 {
+  color: var(--ink);
+}
+
+.idle-copy-2 {
+  color: var(--ink-dim);
+}
 
 
-/* LOADING STATE ------------------------------------------------ */
+/* LOADING STATE */
 .state-loading {
   padding: 40px 0;
 }
@@ -440,9 +484,20 @@ textarea::placeholder {
 
 
 @keyframes barSlide {
-  0%   { left: -30%; width: 30%; }
-  50%  { left: 40%;  width: 40%; }
-  100% { left: 100%; width: 30%; }
+  0% {
+    left: -30%;
+    width: 30%;
+  }
+
+  50% {
+    left: 40%;
+    width: 40%;
+  }
+
+  100% {
+    left: 100%;
+    width: 30%;
+  }
 }
 
 
@@ -457,11 +512,16 @@ textarea::placeholder {
 }
 
 
-.step.active { color: var(--signal); }
-.sep { color: var(--ink-faint); }
+.step.active {
+  color: var(--signal);
+}
+
+.sep {
+  color: var(--ink-faint);
+}
 
 
-/* VERDICT STRIP ------------------------------------------------ */
+/* VERDICT STRIP */
 .verdict {
   display: flex;
   justify-content: space-between;
@@ -489,8 +549,13 @@ textarea::placeholder {
 }
 
 
-.verdict.toxic .verdict-tag { color: var(--warn); }
-.verdict.safe  .verdict-tag { color: var(--safe); }
+.verdict.toxic .verdict-tag {
+  color: var(--warn);
+}
+
+.verdict.safe .verdict-tag {
+  color: var(--safe);
+}
 
 
 .verdict-label {
@@ -527,8 +592,13 @@ textarea::placeholder {
 }
 
 
-.verdict.toxic .gauge-fill { background: var(--warn); }
-.verdict.safe  .gauge-fill { background: var(--safe); }
+.verdict.toxic .gauge-fill {
+  background: var(--warn);
+}
+
+.verdict.safe .gauge-fill {
+  background: var(--safe);
+}
 
 
 .gauge-value {
@@ -547,7 +617,7 @@ textarea::placeholder {
 }
 
 
-/* TABS --------------------------------------------------------- */
+/* TABS */
 .tabs {
   position: relative;
   display: flex;
@@ -572,8 +642,14 @@ textarea::placeholder {
 }
 
 
-.tab:hover { color: var(--ink); }
-.tab.active { color: var(--ink); font-weight: 500; }
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab.active {
+  color: var(--ink);
+  font-weight: 500;
+}
 
 
 .tab-underline {
@@ -585,14 +661,16 @@ textarea::placeholder {
 }
 
 
-/* PANELS ------------------------------------------------------- */
+/* PANELS */
 .panel {
   display: none;
   animation: fadeIn 0.3s var(--ease);
 }
 
 
-.panel.active { display: block; }
+.panel.active {
+  display: block;
+}
 
 
 .panel-hdr {
@@ -670,7 +748,7 @@ textarea::placeholder {
 }
 
 
-/* SAFE STATE --------------------------------------------------- */
+/* SAFE STATE */
 .safe-note {
   padding: 14px 0;
 }
@@ -701,7 +779,7 @@ textarea::placeholder {
 }
 
 
-/* ERROR STATE -------------------------------------------------- */
+/* ERROR STATE */
 .state-error {
   padding: 20px 0;
 }
@@ -745,9 +823,7 @@ textarea::placeholder {
 }
 
 
-/* ================================================================
-   FOOTER
-   ================================================================ */
+/* FOOTER */
 .ftr {
   display: flex;
   justify-content: space-between;
@@ -792,9 +868,18 @@ textarea::placeholder {
 }
 
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--rule); }
-::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); }
+::-webkit-scrollbar {
+  width: 6px;
+}
 
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
 
+::-webkit-scrollbar-thumb {
+  background: var(--rule);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-faint);
+}
