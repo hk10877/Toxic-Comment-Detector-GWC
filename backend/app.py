@@ -4,12 +4,15 @@ Toxicity Detection API
 Wraps the ML classifier + RAG explanation pipeline behind a Flask HTTP API
 that the Chrome extension can call.
 
+
 Run:
     pip install flask flask-cors pandas scikit-learn groq
     python app.py
 
+
 The server listens on http://127.0.0.1:5000
 """
+
 
 import os
 import re
@@ -22,15 +25,17 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics.pairwise import cosine_similarity
 from groq import Groq
 
+
 # ------------------------------------------------------------------
 # CONFIG
 # ------------------------------------------------------------------
 DATA_PATH = os.environ.get("TOXIC_DATA_PATH", "data/train.csv")
 GROQ_API_KEY = os.environ.get(
     "GROQ_API_KEY",
-    "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",
+    "api key here",
 )
 TOXIC_THRESHOLD = 0.3
+
 
 # ------------------------------------------------------------------
 # DATA + TRAINING
@@ -43,6 +48,8 @@ df = df.drop(
 df = df.dropna(subset=["comment_text"])
 
 
+
+
 def clean_text(text: str) -> str:
     text = text.lower()
     text = re.sub(r"http\S+", "", text)
@@ -51,7 +58,10 @@ def clean_text(text: str) -> str:
     return text
 
 
+
+
 df["comment_text"] = df["comment_text"].apply(clean_text)
+
 
 print("[boot] vectorizing...")
 X = df["comment_text"]
@@ -60,6 +70,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
+
 vectorizer = TfidfVectorizer(
     max_features=5000,
     stop_words="english",
@@ -67,6 +78,7 @@ vectorizer = TfidfVectorizer(
 )
 X_train_vec = vectorizer.fit_transform(X_train)
 X_test_vec = vectorizer.transform(X_test)
+
 
 print("[boot] training classifier...")
 model = LogisticRegression(
@@ -77,12 +89,16 @@ train_acc = model.score(X_train_vec, y_train)
 test_acc = model.score(X_test_vec, y_test)
 print(f"[boot] train acc = {train_acc:.3f}  |  test acc = {test_acc:.3f}")
 
+
 # Pre-compute document vectors for retrieval
 print("[boot] pre-computing retrieval index...")
 doc_vectors = vectorizer.transform(df["comment_text"].tolist())
 
+
 # Groq client
 client = Groq(api_key=GROQ_API_KEY)
+
+
 
 
 # ------------------------------------------------------------------
@@ -103,6 +119,8 @@ def retrieve_similar_comments(query: str, top_k: int = 5):
     ]
 
 
+
+
 def call_groq(prompt: str, system: str, max_tokens: int = 400) -> str:
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
@@ -116,6 +134,8 @@ def call_groq(prompt: str, system: str, max_tokens: int = 400) -> str:
     return response.choices[0].message.content.strip()
 
 
+
+
 def explain(query: str, retrieved, confidence: float) -> str:
     examples = "\n".join(
         f'  {i+1}. "{r["comment_text"]}" → {"TOXIC" if r["toxic"] else "NOT TOXIC"} (sim={r["score"]})'
@@ -123,10 +143,13 @@ def explain(query: str, retrieved, confidence: float) -> str:
     )
     prompt = f"""The following comment was flagged as TOXIC with {confidence:.0%} confidence by an ML classifier.
 
+
 Retrieved similar comments from the moderation database:
 {examples}
 
+
 Comment to explain: "{query}"
+
 
 Give exactly 2 sentences explaining WHY this comment is toxic.
 Reference patterns from the examples above. Be specific, not generic."""
@@ -134,10 +157,14 @@ Reference patterns from the examples above. Be specific, not generic."""
     return call_groq(prompt, system, max_tokens=150)
 
 
+
+
 def rewrite(query: str) -> str:
     prompt = f"""Rewrite the following toxic comment so it expresses the same underlying concern or emotion, but in a respectful, constructive way.
 
+
 Original comment: "{query}"
+
 
 Rules:
 - Keep the same intent/meaning where possible
@@ -148,11 +175,14 @@ Rules:
     return call_groq(prompt, system, max_tokens=100)
 
 
+
+
 def analyze(comment: str, top_k: int = 5) -> dict:
     cleaned = clean_text(comment)
     vec = vectorizer.transform([cleaned])
     confidence = float(model.predict_proba(vec)[0][1])
     prediction = 1 if confidence >= TOXIC_THRESHOLD else 0
+
 
     result = {
         "comment": comment,
@@ -162,6 +192,7 @@ def analyze(comment: str, top_k: int = 5) -> dict:
         "rewrite": None,
         "retrieved": None,
     }
+
 
     if prediction == 1:
         retrieved = retrieve_similar_comments(comment, top_k=top_k)
@@ -175,7 +206,10 @@ def analyze(comment: str, top_k: int = 5) -> dict:
         except Exception as e:
             result["rewrite"] = f"(LLM unavailable: {e})"
 
+
     return result
+
+
 
 
 # ------------------------------------------------------------------
@@ -184,6 +218,8 @@ def analyze(comment: str, top_k: int = 5) -> dict:
 app = Flask(__name__)
 # Allow the Chrome extension (chrome-extension://...) + localhost to call us
 CORS(app, resources={r"/*": {"origins": "*"}})
+
+
 
 
 @app.route("/health", methods=["GET"])
@@ -196,6 +232,8 @@ def health():
             "dataset_size": len(df),
         }
     )
+
+
 
 
 @app.route("/analyze", methods=["POST", "OPTIONS"])
@@ -214,5 +252,9 @@ def analyze_route():
         return jsonify({"error": str(e)}), 500
 
 
+
+
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=False)
+
+
