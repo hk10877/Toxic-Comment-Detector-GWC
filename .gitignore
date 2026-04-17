@@ -6,4 +6,4 @@ __pycache__/
 *.pyc
 
 # dataset files 
-cleaned.csv
+cleaned.csv.DS_Store
