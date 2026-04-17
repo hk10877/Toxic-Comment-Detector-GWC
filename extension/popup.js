@@ -2,10 +2,13 @@
    TONECHECK — popup.js
    ================================================================ */
 
+
 const API_BASE = "http://127.0.0.1:5000";
+
 
 // ----- element refs -----
 const $ = (id) => document.getElementById(id);
+
 
 const el = {
   input: $("input"),
@@ -28,20 +31,19 @@ const el = {
   tabUnderline: $("tab-underline"),
   explainText: $("explain-text"),
   rewriteText: $("rewrite-text"),
-  matchesList: $("matches-list"),
   safeNote: $("safe-note"),
   copyRewrite: $("copy-rewrite"),
   pingBtn: $("ping-btn"),
   panelExplain: $("panel-explain"),
   panelRewrite: $("panel-rewrite"),
-  panelMatches: $("panel-matches"),
+  tabPanels: $("tab-panels"),
 };
+
 
 // ================================================================
 // INIT
 // ================================================================
 document.addEventListener("DOMContentLoaded", () => {
-  // restore last draft
   chrome.storage?.local.get(["lastDraft"], (data) => {
     if (data.lastDraft) {
       el.input.value = data.lastDraft;
@@ -49,20 +51,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // check if text was forwarded from context menu
+
   chrome.storage?.local.get(["pendingText"], (data) => {
     if (data.pendingText) {
       el.input.value = data.pendingText;
       chrome.storage.local.remove(["pendingText"]);
       updateCounter();
-      // auto-run
       setTimeout(runAnalysis, 250);
     }
   });
 
+
   pingServer();
   setupTabs();
 });
+
 
 // ================================================================
 // INPUT HANDLERS
@@ -72,11 +75,13 @@ el.input.addEventListener("input", () => {
   chrome.storage?.local.set({ lastDraft: el.input.value });
 });
 
+
 el.input.addEventListener("keydown", (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
     runAnalysis();
   }
 });
+
 
 el.analyzeBtn.addEventListener("click", runAnalysis);
 el.clearBtn.addEventListener("click", () => {
@@ -86,10 +91,12 @@ el.clearBtn.addEventListener("click", () => {
   showState("idle");
 });
 
+
 el.pingBtn.addEventListener("click", (e) => {
   e.preventDefault();
   pingServer();
 });
+
 
 el.copyRewrite.addEventListener("click", () => {
   const txt = el.rewriteText.textContent.trim();
@@ -104,10 +111,12 @@ el.copyRewrite.addEventListener("click", () => {
   });
 });
 
+
 function updateCounter() {
   const n = el.input.value.length;
   el.counter.textContent = `${n} char${n === 1 ? "" : "s"}`;
 }
+
 
 // ================================================================
 // SERVER HEALTH
@@ -124,12 +133,14 @@ async function pingServer() {
   }
 }
 
+
 function setStatus(label, state) {
   el.statusLabel.textContent = label;
   el.status.classList.remove("online", "offline");
   if (state === "online") el.status.classList.add("online");
   else if (state === "offline") el.status.classList.add("offline");
 }
+
 
 // ================================================================
 // ANALYSIS
@@ -141,8 +152,10 @@ async function runAnalysis() {
     return;
   }
 
+
   showState("loading");
   animateLoaderSteps();
+
 
   try {
     const res = await fetch(`${API_BASE}/analyze`, {
@@ -151,10 +164,12 @@ async function runAnalysis() {
       body: JSON.stringify({ comment: text, top_k: 5 }),
     });
 
+
     if (!res.ok) {
       const errData = await res.json().catch(() => ({}));
       throw new Error(errData.error || `Server returned ${res.status}`);
     }
+
 
     const data = await res.json();
     renderResult(data);
@@ -165,6 +180,7 @@ async function runAnalysis() {
     showState("error");
   }
 }
+
 
 let loaderInterval;
 function animateLoaderSteps() {
@@ -180,6 +196,7 @@ function animateLoaderSteps() {
   }, 600);
 }
 
+
 // ================================================================
 // RENDERING
 // ================================================================
@@ -187,66 +204,42 @@ function renderResult(data) {
   clearInterval(loaderInterval);
   showState("result");
 
+
   const isToxic = data.prediction === "Toxic";
   const pct = Math.round((data.confidence || 0) * 100);
 
-  // Verdict strip
+
   el.verdict.classList.remove("toxic", "safe");
   el.verdict.classList.add(isToxic ? "toxic" : "safe");
   el.verdictTag.textContent = isToxic ? "Flagged" : "Clear";
   el.verdictLabel.textContent = isToxic ? "toxic · attention required" : "no markers detected";
   el.confidenceNum.textContent = pct;
 
-  // animate gauge after a tick so the transition plays
+
   el.gaugeFill.style.width = "0%";
   requestAnimationFrame(() => {
     setTimeout(() => { el.gaugeFill.style.width = `${pct}%`; }, 40);
   });
 
+
   if (isToxic) {
     el.tabs.classList.remove("hidden");
     el.safeNote.classList.add("hidden");
-    document.getElementById("tab-panels").classList.remove("hidden");
+    el.tabPanels.classList.remove("hidden");
+
 
     el.explainText.textContent = data.explanation || "(no explanation available)";
     el.rewriteText.textContent = data.rewrite || "(no rewrite available)";
-    renderMatches(data.retrieved || []);
 
-    // reset to first tab
+
     activateTab("explain");
   } else {
     el.tabs.classList.add("hidden");
-    document.getElementById("tab-panels").classList.add("hidden");
+    el.tabPanels.classList.add("hidden");
     el.safeNote.classList.remove("hidden");
   }
 }
 
-function renderMatches(matches) {
-  el.matchesList.innerHTML = "";
-  if (!matches.length) {
-    el.matchesList.innerHTML = '<li class="match"><div class="match-text">No similar matches found.</div></li>';
-    return;
-  }
-  for (const m of matches) {
-    const li = document.createElement("li");
-    li.className = `match ${m.toxic ? "toxic" : "clean"}`;
-    li.innerHTML = `
-      <span class="match-tag ${m.toxic ? "toxic" : "clean"}">${m.toxic ? "tox" : "clr"}</span>
-      <div class="match-text">${escapeHtml(m.comment_text)}</div>
-      <span class="match-score">${m.score.toFixed(2)}</span>
-    `;
-    el.matchesList.appendChild(li);
-  }
-}
-
-function escapeHtml(s) {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 // ================================================================
 // STATE SWITCHER
@@ -263,6 +256,7 @@ function showState(state) {
   };
   map[state]?.classList.remove("hidden");
 
+
   if (state === "loading") {
     el.analyzeBtn.disabled = true;
     el.analyzeBtn.querySelector(".btn-label").textContent = "Analyzing";
@@ -272,6 +266,7 @@ function showState(state) {
   }
 }
 
+
 // ================================================================
 // TABS
 // ================================================================
@@ -280,9 +275,9 @@ function setupTabs() {
   tabs.forEach((t) => {
     t.addEventListener("click", () => activateTab(t.dataset.tab));
   });
-  // position underline initially
   requestAnimationFrame(() => positionUnderline(document.querySelector(".tab.active")));
 }
+
 
 function activateTab(name) {
   const tabs = document.querySelectorAll(".tab");
@@ -299,6 +294,7 @@ function activateTab(name) {
   positionUnderline(activeTab);
 }
 
+
 function positionUnderline(tab) {
   if (!tab) return;
   const rect = tab.getBoundingClientRect();
@@ -306,3 +302,4 @@ function positionUnderline(tab) {
   el.tabUnderline.style.left = `${rect.left - parent.left}px`;
   el.tabUnderline.style.width = `${rect.width}px`;
 }
+

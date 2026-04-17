@@ -33,6 +33,7 @@
         </div>
       </header>
 
+
       <!-- INPUT -->
       <section class="input-section">
         <div class="label-row">
@@ -61,6 +62,7 @@
         </div>
       </section>
 
+
       <!-- RESULTS -->
       <section class="results" id="results" aria-live="polite">
         <!-- IDLE -->
@@ -77,6 +79,7 @@
           </p>
         </div>
 
+
         <!-- LOADING -->
         <div class="state state-loading hidden" id="state-loading">
           <div class="loader">
@@ -84,14 +87,13 @@
             <div class="loader-steps">
               <span class="step active" data-step="1">classify</span>
               <span class="sep">·</span>
-              <span class="step" data-step="2">retrieve</span>
+              <span class="step" data-step="2">explain</span>
               <span class="sep">·</span>
-              <span class="step" data-step="3">explain</span>
-              <span class="sep">·</span>
-              <span class="step" data-step="4">rewrite</span>
+              <span class="step" data-step="3">rewrite</span>
             </div>
           </div>
         </div>
+
 
         <!-- RESULT -->
         <div class="state state-result hidden" id="state-result">
@@ -111,13 +113,14 @@
             </div>
           </div>
 
-          <!-- Tabs (for toxic results only) -->
+
+          <!-- Tabs (for toxic results only) — matches removed -->
           <div class="tabs hidden" id="tabs">
             <button class="tab active" data-tab="explain">why</button>
             <button class="tab" data-tab="rewrite">rewrite</button>
-            <button class="tab" data-tab="matches">matches</button>
             <div class="tab-underline" id="tab-underline"></div>
           </div>
+
 
           <div class="tab-panels" id="tab-panels">
             <!-- Explanation -->
@@ -137,15 +140,8 @@
               </div>
               <blockquote class="rewrite-quote" id="rewrite-text">—</blockquote>
             </div>
-            <!-- Matches -->
-            <div class="panel panel-matches" id="panel-matches">
-              <div class="panel-hdr">
-                <span class="panel-num">03</span>
-                <span class="panel-title">Similar flagged comments</span>
-              </div>
-              <ul class="matches" id="matches-list"></ul>
-            </div>
           </div>
+
 
           <!-- Safe state -->
           <div class="safe-note hidden" id="safe-note">
@@ -155,6 +151,7 @@
             </div>
           </div>
         </div>
+
 
         <!-- ERROR -->
         <div class="state state-error hidden" id="state-error">
@@ -168,6 +165,7 @@
         </div>
       </section>
 
+
       <!-- FOOTER -->
       <footer class="ftr">
         <div class="ftr-left">
@@ -180,6 +178,8 @@
       </footer>
     </div>
 
+
     <script src="popup.js"></script>
   </body>
 </html>
+

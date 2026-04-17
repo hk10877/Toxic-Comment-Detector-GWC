@@ -8,33 +8,42 @@ from groq import Groq
 # load dataset
 df = pd.read_csv("data/train.csv")
 
+
 # cleaning steps and extracting columns we need
 df = df.drop(columns=['severe_toxic', 'obscene', 'threat', 'insult', 'identity_hate', "id"])
 df = df.dropna(subset=['comment_text'])
 
+
 # df = df['comment_text'].str.strip()
+
 
 # cleaning the text
 def clean_text(text):
-    text = text.lower()   
+    text = text.lower()  
     text = re.sub(r"http\S+", "", text)  # remove links
     text = re.sub(r"[^a-z\s]", "", text)  # remove punctuation/numbers
     text = re.sub(r"\s+", " ", text).strip()  # remove
     return text
 
+
 df['comment_text'] = df['comment_text'].apply(clean_text)
+
 
 # View the cleaned dataset
 df.to_csv("cleaned.csv", index=False)
 
+
 print(df["toxic"].value_counts())
+
 
 X = df["comment_text"]
 y = df["toxic"]
 
+
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
+
 
 # sparse vectorization - key word vectors
 vectorizer = TfidfVectorizer(max_features=5000,
@@ -42,21 +51,26 @@ vectorizer = TfidfVectorizer(max_features=5000,
                              ngram_range=(1, 2)   # unigrams + bigrams
                              )
 
+
 X_train_vec = vectorizer.fit_transform(X_train)  # learn + transform
 X_test_vec = vectorizer.transform(X_test)        # only transform
+
 
 # print(X_train_vec.shape)
 # print(X_test_vec.shape)
 
+
 # # Harschi driving
 # # after fitting vectorizer
 # doc_vectors = vectorizer.transform(df["comment_text"].tolist())
+
 
 # def retrieve_similar_comments(query, top_k=5):
 #     cleaned = clean_text(query)
 #     q_vec = vectorizer.transform([cleaned])
 #     scores = cosine_similarity(q_vec, doc_vectors).flatten()
 #     top_idx = scores.argsort()[::-1][:top_k]
+
 
 #     results = []
 #     for i in top_idx:
@@ -67,42 +81,54 @@ X_test_vec = vectorizer.transform(X_test)        # only transform
 #         })
 #     return results
 
+
 # # example usage
 # query = "That person is ugly"
 # print(retrieve_similar_comments(query, top_k=5))
 
+
 # # print(vectorizer.get_feature_names_out()[:200])
+
+
 
 
 # Example model
 model = LogisticRegression(max_iter=10000, random_state=0, class_weight = 'balanced', C=100)
 model.fit(X_train_vec, y_train)
 
+
 print("Train accuracy:", model.score(X_train_vec, y_train))
 print("Test accuracy:", model.score(X_test_vec, y_test))
+
 
 # # for testing the model
 # def predict_toxicity(text):
 #     # clean the input the SAME way as training data
 #     cleaned = clean_text(text)
-    
+   
 #     # vectorize (IMPORTANT: use transform, not fit_transform)
 #     vec = vectorizer.transform([cleaned])
-    
+   
 #     # predict
 #     pred = model.predict(vec)[0]
 #     prob = model.predict_proba(vec)[0][1]  # probability of toxic
-    
+   
 #     return pred, prob
+
 
 # sentence = "You are a sad person"
 # pred, prob = predict_toxicity(sentence)
 
 
 
+
+
+
 # print("Sentence:", sentence)
 # print("Prediction:", "Toxic" if pred == 1 else "Not Toxic")
 # print("Confidence:", prob)
+
+
 
 
 doc_vectors = vectorizer.transform(df["comment_text"].tolist())
@@ -124,7 +150,7 @@ def retrieve_similar_comments(query: str, top_k: int = 5) -> list[dict]:
         for i in top_idx
     ]
  
-# GROQ CLIENT 
+# GROQ CLIENT
  
 client = Groq(api_key="api key here")  # or set env var GROQ_API_KEY
  
@@ -164,7 +190,7 @@ Reference patterns from the examples above. Be specific, not generic."""
 # REWRITE
  
 def rewrite(query: str) -> str:
-    prompt = f"""Rewrite the following toxic comment so it expresses the same underlying concern or emotion, but in a respectful, constructive way. 
+    prompt = f"""Rewrite the following toxic comment so it expresses the same underlying concern or emotion, but in a respectful, constructive way.
  
 Original comment: "{query}"
  
@@ -177,7 +203,7 @@ Rules:
     system = "You are a communication coach who rewrites toxic messages constructively."
     return call_groq(prompt, system, max_tokens=100)
  
-# FULL PIPELINE 
+# FULL PIPELINE
  
 def analyze(comment: str, top_k: int = 5) -> dict:
     # Step 1 — Classify
@@ -185,6 +211,7 @@ def analyze(comment: str, top_k: int = 5) -> dict:
     vec        = vectorizer.transform([cleaned])
     confidence = model.predict_proba(vec)[0][1]   # P(toxic)
     prediction = 1 if confidence >= 0.3 else 0
+
 
  
     result = {
@@ -205,7 +232,7 @@ def analyze(comment: str, top_k: int = 5) -> dict:
  
     return result
  
-# DISPLAY 
+# DISPLAY
  
 def display(result: dict):
     print("=" * 60)
@@ -218,7 +245,7 @@ def display(result: dict):
         print(f'\nRewrite:\n{result["rewrite"]}')
     print()
  
-# RUN 
+# RUN
  
 if __name__ == "__main__":
     test_comments = [
@@ -230,3 +257,6 @@ if __name__ == "__main__":
     for comment in test_comments:
         result = analyze(comment)
         display(result)
+
+
+
