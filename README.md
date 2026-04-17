@@ -1,4 +1,5 @@
-# Tonecheck — Toxicity Diagnostic
+Tonecheck — Toxicity Diagnostic
+A Chrome extension frontend for an ML-based toxicity classifier with RAG-powered explanations and constructive rewrites.
 
 A Chrome extension frontend for an ML-based toxicity classifier with RAG-powered explanations and constructive rewrites.
 
@@ -24,7 +25,10 @@ Toxic-Comment-Detector-GWC/
 └── README.md
 ```
 
----
+Trains a TF-IDF + Logistic Regression classifier on the Jigsaw dataset at startup (~10–30 seconds)
+Exposes two HTTP endpoints on http://127.0.0.1:5000
+For toxic inputs, calls Groq (llama-3.3-70b) to generate a two-sentence diagnostic and a constructive rewrite
+Frontend (Chrome extension)
 
 ## How it works
 
@@ -38,7 +42,8 @@ Toxic-Comment-Detector-GWC/
 - For flagged text, shows two tabs: **why** (explanation) and **rewrite** (constructive version)
 - Right-click any text on any webpage → "Check tone with Tonecheck" → auto-analyzes
 
----
+The UI
+States — the results panel cycles through four states: idle (resting wave), loading (animated bar with classify · explain · rewrite steps), result, and error.
 
 ## Setup
 
@@ -90,7 +95,21 @@ DATA_PATH = os.environ.get("TOXIC_DATA_PATH", "../data/train.csv")
 4. Select the `extension/` folder
 5. Click the puzzle-piece icon in Chrome's toolbar → pin Tonecheck so it stays visible
 
----
+Customizing
+Change	Where
+Toxic threshold	TOXIC_THRESHOLD = 0.3 in backend/app.py
+Accent color	--signal in extension/popup.css (currently electric lime #c7ff3d)
+API base URL	API_BASE in extension/popup.js if you move the server off localhost
+LLM model	call_groq() in backend/app.py (currently llama-3.3-70b-versatile)
+Number of retrieved matches	top_k in the JSON sent from popup.js (default 5)
+Tech stack
+Classifier: TF-IDF (unigrams + bigrams, 5000 features) + Logistic Regression (class_weight="balanced", C=100)
+Retrieval: Cosine similarity over TF-IDF vectors (used internally for RAG context; not exposed in UI)
+Explanation / rewrite: Groq API with llama-3.3-70b-versatile
+Server: Flask + flask-cors
+Extension: Manifest V3, vanilla JS/CSS, Fraunces (serif) + JetBrains Mono (mono)
+Security
+The Groq API key lives in .env and is loaded via python-dotenv. Never commit .env — add it to .gitignore if you haven't. Rotate the key immediately if it's ever exposed in a shared file, chat, or repo.
 
 ## Running it
 
