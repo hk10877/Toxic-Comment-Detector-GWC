@@ -7,3 +7,4 @@ __pycache__/
 
 # dataset files 
 cleaned.csv.DS_Store
+.DS_Store
